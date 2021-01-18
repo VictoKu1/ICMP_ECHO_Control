@@ -8,22 +8,21 @@
 #define ETHER_ADDR_LEN 6
 #define PCKT_LEN 1024
 
-
 unsigned short checksum(unsigned short *buffer, int size)
 {
-    unsigned long cksum=0;
-    while (size > 1)
-    {
-        cksum += *buffer++;
-        size  -= sizeof(unsigned short);
-    }
-    if (size)
-    {
-        cksum += *(char*)buffer;
-    }
-    cksum = (cksum >> 16) + (cksum & 0xffff);
-    cksum += (cksum >>16);
-    return (unsigned short)(~cksum);
+	unsigned long cksum = 0;
+	while (size > 1)
+	{
+		cksum += *buffer++;
+		size -= sizeof(unsigned short);
+	}
+	if (size)
+	{
+		cksum += *(char *)buffer;
+	}
+	cksum = (cksum >> 16) + (cksum & 0xffff);
+	cksum += (cksum >> 16);
+	return (unsigned short)(~cksum);
 }
 
 /* Ethernet addresses are 6 bytes */
@@ -33,8 +32,8 @@ unsigned short checksum(unsigned short *buffer, int size)
 struct sniff_ethernet
 {
 	unsigned char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
-	unsigned char ether_shost[ETHER_ADDR_LEN];	  /* Source host address */
-	unsigned char ether_type;					   /* IP? ARP? RARP? etc */
+	unsigned char ether_shost[ETHER_ADDR_LEN]; /* Source host address */
+	unsigned char ether_type;				   /* IP? ARP? RARP? etc */
 };
 
 /* IP header */
@@ -66,7 +65,7 @@ struct sniff_tcp
 	unsigned short th_dport; /* destination port */
 	tcp_seq th_seq;			 /* sequence number */
 	tcp_seq th_ack;			 /* acknowledgement number */
-	unsigned char th_offx2;  /* data offset, rsvd */
+	unsigned char th_offx2;	 /* data offset, rsvd */
 #define TH_OFF(th) (((th)->th_offx2 & 0xf0) >> 4)
 	unsigned char th_flags;
 #define TH_FIN 0x01
@@ -83,20 +82,22 @@ struct sniff_tcp
 	unsigned short th_urp; /* urgent pointer */
 };
 
-struct sniff_icmp{
-	#define ICMP_ECHO_REQ 8
-	#define ICMP_ECHO_RES 0
-	#define ICMP_HDR_LEN 4
- 	unsigned char icmp_type;
- 	unsigned char icmp_code;
- 	unsigned short icmp_cksum;		/* icmp checksum */
- 	unsigned short icmp_id;				/* icmp identifier */
- 	unsigned short icmp_seq;			/* icmp sequence number */
+struct sniff_icmp
+{
+#define ICMP_ECHO_REQ 8
+#define ICMP_ECHO_RES 0
+#define ICMP_HDR_LEN 4
+	unsigned char icmp_type;
+	unsigned char icmp_code;
+	unsigned short icmp_cksum; /* icmp checksum */
+	unsigned short icmp_id;	   /* icmp identifier */
+	unsigned short icmp_seq;   /* icmp sequence number */
 };
 
 #define DATALEN (PCKT_LEN - sizeof(struct sniff_icmp) - sizeof(struct sniff_ip))
 
-struct icmp_pckt{
+struct icmp_pckt
+{
 	struct sniff_ip ip_hdr;
 	struct sniff_icmp icmp_hdr;
 	char echoData[DATALEN];

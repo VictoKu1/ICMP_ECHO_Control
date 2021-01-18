@@ -1,6 +1,6 @@
 // icmp.cpp
 // Robert Iakobashvili for Ariel uni, license BSD/MIT/Apache
-// 
+//
 // Sending ICMP Echo Requests using Raw-sockets.
 //
 
@@ -9,7 +9,7 @@
 #if defined _WIN32
 // See at https://msdn.microsoft.com/en-us/library/windows/desktop/ms740506(v=vs.85).aspx
 // link with Ws2_32.lib
-#pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -18,35 +18,35 @@
 * They were taken from the MSDN ping.c program and modified.
 */
 
-#define ICMP_ECHO       8
-#define ICMP_ECHOREPLY  0
+#define ICMP_ECHO 8
+#define ICMP_ECHOREPLY 0
 #define IP_MAXPACKET 65535
 
 #pragma pack(1)
 
 struct ip
 {
-	UINT8   ip_hl : 4;          // length of the header
-	UINT8   ip_v : 4;           // Version of IP
-	UINT8   ip_tos;             // Type of service
-	UINT16  ip_len;             // total length of the packet
-	UINT16  ip_id;              // unique identifier of the flow
-	UINT16  ip_off;				// fragmentation flags
-	UINT8   ip_ttl;             // Time to live
-	UINT8   ip_p;               // protocol (ICMP, TCP, UDP etc)
-	UINT16  ip_sum;             // IP checksum
-	UINT32  ip_src;
-	UINT32  ip_dst;
+    UINT8 ip_hl : 4; // length of the header
+    UINT8 ip_v : 4;  // Version of IP
+    UINT8 ip_tos;    // Type of service
+    UINT16 ip_len;   // total length of the packet
+    UINT16 ip_id;    // unique identifier of the flow
+    UINT16 ip_off;   // fragmentation flags
+    UINT8 ip_ttl;    // Time to live
+    UINT8 ip_p;      // protocol (ICMP, TCP, UDP etc)
+    UINT16 ip_sum;   // IP checksum
+    UINT32 ip_src;
+    UINT32 ip_dst;
 };
 
 struct icmp
 {
-	UINT8  icmp_type;
-	UINT8  icmp_code;      // type sub code
-	UINT16 icmp_cksum;
-	UINT16 icmp_id;
-	UINT16 icmp_seq;
-	UINT32 icmp_data;      // time data
+    UINT8 icmp_type;
+    UINT8 icmp_code; // type sub code
+    UINT16 icmp_cksum;
+    UINT16 icmp_id;
+    UINT16 icmp_seq;
+    UINT32 icmp_data; // time data
 };
 
 #pragma pack()
@@ -57,22 +57,22 @@ struct icmp
 //    long tv_usec;
 //} timeval;
 
-int gettimeofday(struct timeval * tp, struct timezone * tzp)
+int gettimeofday(struct timeval *tp, struct timezone *tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
-    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+    static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
 
-    SYSTEMTIME  system_time;
-    FILETIME    file_time;
-    uint64_t    time;
+    SYSTEMTIME system_time;
+    FILETIME file_time;
+    uint64_t time;
 
-    GetSystemTime( &system_time );
-    SystemTimeToFileTime( &system_time, &file_time );
-    time =  ((uint64_t)file_time.dwLowDateTime )      ;
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    time = ((uint64_t)file_time.dwLowDateTime);
     time += ((uint64_t)file_time.dwHighDateTime) << 32;
 
-    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
-    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
+    tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
     return 0;
 }
 
@@ -92,15 +92,14 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 #include <sys/time.h> // gettimeofday()
 #endif
 
-
- // IPv4 header len without options
+// IPv4 header len without options
 #define IP4_HDRLEN 20
 
 // ICMP header len for echo req
-#define ICMP_HDRLEN 8 
+#define ICMP_HDRLEN 8
 
 // Checksum algo
-unsigned short calculate_checksum(unsigned short * paddress, int len);
+unsigned short calculate_checksum(unsigned short *paddress, int len);
 
 // 1. Change SOURCE_IP and DESTINATION_IP to the relevant
 //     for your computer
@@ -112,7 +111,7 @@ unsigned short calculate_checksum(unsigned short * paddress, int len);
 //    On Linux, run it as a root or with sudo.
 //
 // 4. For debugging and development, run MS Visual Studio (MSVS) as admin by
-//    right-clicking at the icon of MSVS and selecting from the right-click 
+//    right-clicking at the icon of MSVS and selecting from the right-click
 //    menu "Run as administrator"
 //
 //  Note. You can place another IP-source address that does not belong to your
@@ -124,9 +123,9 @@ unsigned short calculate_checksum(unsigned short * paddress, int len);
 // i.e the gateway or ping to google.com for their ip-address
 #define DESTINATION_IP "192.168.1.1"
 
-int main ()
+int main()
 {
-    struct ip iphdr; // IPv4 header
+    struct ip iphdr;     // IPv4 header
     struct icmp icmphdr; // ICMP-header
     char data[IP_MAXPACKET] = "This is the ping.\n";
 
@@ -146,12 +145,12 @@ int main ()
     iphdr.ip_tos = 0;
 
     // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
-    iphdr.ip_len = htons (IP4_HDRLEN + ICMP_HDRLEN + datalen);
+    iphdr.ip_len = htons(IP4_HDRLEN + ICMP_HDRLEN + datalen);
 
     // ID sequence number (16 bits): not in use since we do not allow fragmentation
     iphdr.ip_id = 0;
 
-    // Fragmentation bits - we are sending short packets below MTU-size and without 
+    // Fragmentation bits - we are sending short packets below MTU-size and without
     // fragmentation
     int ip_flags[4];
 
@@ -167,8 +166,7 @@ int main ()
     // Fragmentation offset (13 bits)
     ip_flags[3] = 0;
 
-    iphdr.ip_off = htons ((ip_flags[0] << 15) + (ip_flags[1] << 14)
-                      + (ip_flags[2] << 13) +  ip_flags[3]);
+    iphdr.ip_off = htons((ip_flags[0] << 15) + (ip_flags[1] << 14) + (ip_flags[2] << 13) + ip_flags[3]);
 
     // TTL (8 bits): 128 - you can play with it: set to some reasonable number
     iphdr.ip_ttl = 128;
@@ -177,35 +175,38 @@ int main ()
     iphdr.ip_p = IPPROTO_ICMP;
 
     // Source IP
-    if (inet_pton (AF_INET, SOURCE_IP, &(iphdr.ip_src)) <= 0) 
+    if (inet_pton(AF_INET, SOURCE_IP, &(iphdr.ip_src)) <= 0)
     {
-        fprintf (stderr, "inet_pton() failed for source-ip with error: %d"
+        fprintf(stderr, "inet_pton() failed for source-ip with error: %d"
 #if defined _WIN32
-			, WSAGetLastError()
+                ,
+                WSAGetLastError()
 #else
-			, errno
+                ,
+                errno
 #endif
-			);
+        );
         return -1;
     }
 
     // Destination IPv
-    if (inet_pton (AF_INET, DESTINATION_IP, &(iphdr.ip_dst)) <= 0)
+    if (inet_pton(AF_INET, DESTINATION_IP, &(iphdr.ip_dst)) <= 0)
     {
-        fprintf (stderr, "inet_pton() failed for destination-ip with error: %d" 
+        fprintf(stderr, "inet_pton() failed for destination-ip with error: %d"
 #if defined _WIN32
-			, WSAGetLastError()
+                ,
+                WSAGetLastError()
 #else
-			, errno
+                ,
+                errno
 #endif
-			);
+        );
         return -1;
     }
 
     // IPv4 header checksum (16 bits): set to 0 prior to calculating in order not to include itself.
     iphdr.ip_sum = 0;
-    iphdr.ip_sum = calculate_checksum((unsigned short *) &iphdr, IP4_HDRLEN);
-
+    iphdr.ip_sum = calculate_checksum((unsigned short *)&iphdr, IP4_HDRLEN);
 
     //===================
     // ICMP header
@@ -228,24 +229,24 @@ int main ()
     // ICMP header checksum (16 bits): set to 0 not to include into checksum calculation
     icmphdr.icmp_cksum = 0;
 
-    // Combine the packet 
+    // Combine the packet
     char packet[IP_MAXPACKET];
 
     // First, IP header.
-    memcpy (packet, &iphdr, IP4_HDRLEN);
+    memcpy(packet, &iphdr, IP4_HDRLEN);
 
     // Next, ICMP header
-    memcpy ((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
+    memcpy((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
 
     // After ICMP header, add the ICMP data.
-    memcpy (packet + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
+    memcpy(packet + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
 
     // Calculate the ICMP header checksum
-    icmphdr.icmp_cksum = calculate_checksum((unsigned short *) (packet + IP4_HDRLEN), ICMP_HDRLEN + datalen);
-    memcpy ((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
+    icmphdr.icmp_cksum = calculate_checksum((unsigned short *)(packet + IP4_HDRLEN), ICMP_HDRLEN + datalen);
+    memcpy((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
 
     struct sockaddr_in dest_in;
-    memset (&dest_in, 0, sizeof (struct sockaddr_in));
+    memset(&dest_in, 0, sizeof(struct sockaddr_in));
     dest_in.sin_family = AF_INET;
 
     // The port is irrelant for Networking and therefore was zeroed.
@@ -254,32 +255,34 @@ int main ()
 #else
     dest_in.sin_addr.s_addr = iphdr.ip_dst.s_addr;
 #endif
-    
 
 #if defined _WIN32
-	WSADATA wsaData = { 0 };
-	int iResult = 0;
+    WSADATA wsaData = {0};
+    int iResult = 0;
 
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		printf("WSAStartup failed: %d\n", iResult);
-		return 1;
-	}
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0)
+    {
+        printf("WSAStartup failed: %d\n", iResult);
+        return 1;
+    }
 #endif
 
     // Create raw socket for IP-RAW (make IP-header by yourself)
     int sock = -1;
-    if ((sock = socket (AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1) 
+    if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1)
     {
-        fprintf (stderr, "socket() failed with error: %d"
+        fprintf(stderr, "socket() failed with error: %d"
 #if defined _WIN32
-			, WSAGetLastError()
+                ,
+                WSAGetLastError()
 #else
-			, errno
+                ,
+                errno
 #endif
-			);
-        fprintf (stderr, "To create a raw socket, the process needs to be run by Admin/root user.\n\n");
+        );
+        fprintf(stderr, "To create a raw socket, the process needs to be run by Admin/root user.\n\n");
         return -1;
     }
 
@@ -287,73 +290,75 @@ int main ()
     // the networking in kernel is in charge only for Ethernet header.
     //
     const int flagOne = 1;
-    if (setsockopt (sock, IPPROTO_IP, IP_HDRINCL,
+    if (setsockopt(sock, IPPROTO_IP, IP_HDRINCL,
 #if defined _WIN32
-		(const char*)
+                   (const char *)
 #endif
-		&flagOne, // The above casting is important for Windows.
-		sizeof (flagOne)) == -1) 
+                   &flagOne, // The above casting is important for Windows.
+                   sizeof(flagOne)) == -1)
     {
-        fprintf (stderr, "setsockopt() failed with error: %d"
+        fprintf(stderr, "setsockopt() failed with error: %d"
 #if defined _WIN32
-			, WSAGetLastError()
+                ,
+                WSAGetLastError()
 #else
-			, errno
+                ,
+                errno
 #endif
-			);
+        );
         return -1;
     }
 
     // Send the packet using sendto() for sending datagrams.
-    if (sendto (sock, packet, IP4_HDRLEN + ICMP_HDRLEN + datalen, 0, (struct sockaddr *) &dest_in, sizeof (dest_in)) == -1)  
+    if (sendto(sock, packet, IP4_HDRLEN + ICMP_HDRLEN + datalen, 0, (struct sockaddr *)&dest_in, sizeof(dest_in)) == -1)
     {
-        fprintf (stderr, "sendto() failed with error: %d"
+        fprintf(stderr, "sendto() failed with error: %d"
 #if defined _WIN32
-			, WSAGetLastError()
+                ,
+                WSAGetLastError()
 #else
-			, errno
+                ,
+                errno
 #endif
-			);
+        );
         return -1;
     }
 
-  // Close the raw socket descriptor.
+    // Close the raw socket descriptor.
 #if defined _WIN32
-  closesocket(sock);
-  WSACleanup();
+    closesocket(sock);
+    WSACleanup();
 #else
-  close(sock);
+    close(sock);
 #endif
 
-  return 0;
+    return 0;
 }
 
 // Compute checksum (RFC 1071).
-unsigned short calculate_checksum(unsigned short * paddress, int len)
+unsigned short calculate_checksum(unsigned short *paddress, int len)
 {
-	int nleft = len;
-	int sum = 0;
-	unsigned short * w = paddress;
-	unsigned short answer = 0;
+    int nleft = len;
+    int sum = 0;
+    unsigned short *w = paddress;
+    unsigned short answer = 0;
 
-	while (nleft > 1)
-	{
-		sum += *w++;
-		nleft -= 2;
-	}
+    while (nleft > 1)
+    {
+        sum += *w++;
+        nleft -= 2;
+    }
 
-	if (nleft == 1)
-	{
-		*((unsigned char *)&answer) = *((unsigned char *)w);
-		sum += answer;
-	}
+    if (nleft == 1)
+    {
+        *((unsigned char *)&answer) = *((unsigned char *)w);
+        sum += answer;
+    }
 
-	// add back carry outs from top 16 bits to low 16 bits
-	sum = (sum >> 16) + (sum & 0xffff); // add hi 16 to low 16
-	sum += (sum >> 16);                 // add carry
-	answer = ~sum;                      // truncate to 16 bits
+    // add back carry outs from top 16 bits to low 16 bits
+    sum = (sum >> 16) + (sum & 0xffff); // add hi 16 to low 16
+    sum += (sum >> 16);                 // add carry
+    answer = ~sum;                      // truncate to 16 bits
 
-	return answer;
+    return answer;
 }
-
-
