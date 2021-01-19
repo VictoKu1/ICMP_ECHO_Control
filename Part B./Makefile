@@ -1,8 +1,15 @@
-all: main
+CC=gcc
+FLAGS= -Wall -g
+
+all: main main.o
+
 main: main.o
-	gcc main.o -o main
-main.o: main.c
-	gcc -c main.c -o main.o
+	$(CC) $(FLAGS) -o main main.o
+
+main.o: main.c header.h
+	$(CC) $(FLAGS) -c main.c header.h
+
 .PHONY: clean all
+
 clean:
-	rm main *.o
+	rm -f main *.o *.gch
