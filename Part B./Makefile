@@ -1,10 +1,10 @@
 CC=gcc
 FLAGS= -Wall -g
 
-all: main main.o
+all: icmpSniff main.o
 
-main: main.o
-	$(CC) $(FLAGS) -o main main.o
+icmpSniff: main.o
+	$(CC) $(FLAGS) -o icmpSniff main.o
 
 main.o: main.c header.h
 	$(CC) $(FLAGS) -c main.c header.h
@@ -12,4 +12,4 @@ main.o: main.c header.h
 .PHONY: clean all
 
 clean:
-	rm -f main *.o *.gch
+	rm -f icmpSniff *.o *.gch
